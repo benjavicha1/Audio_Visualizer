@@ -10,6 +10,7 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -155,8 +156,14 @@ public class PlayerController implements Initializable {
             });
             mediaPlayer.setAudioSpectrumNumBands(numBands);
             mediaPlayer.setAudioSpectrumInterval(updateInterval);
+            InvalidationListener sliderChangeListener = o -> {
+                Duration seekTo = Duration.millis(timeSlider.getValue());
+                mediaPlayer.seek(seekTo);
+            };
             mediaPlayer.setAudioSpectrumListener((double timestamp, double duration, float[] magnitudes, float[] phases) -> {
+                timeSlider.valueProperty().removeListener(sliderChangeListener);
                 handleUpdate(timestamp, duration, magnitudes, phases);
+                timeSlider.valueProperty().addListener(sliderChangeListener); 
             });
             filePathText.setText(file.getPath());
         } catch (Exception ex) {
@@ -190,7 +197,7 @@ public class PlayerController implements Initializable {
         
         currentVisualizer.update(timestamp, duration, magnitudes, phases);
     }
-    
+            
     @FXML
     private void handleOpen(Event event) {
         Stage primaryStage = (Stage)vizPane.getScene().getWindow();
